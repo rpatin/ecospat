@@ -364,26 +364,20 @@ ecospat.ESM.Projection <- function(ESM.modeling.output, new.env, name.env = NULL
         next()
       }
       
-      # if DataSplitTable is provided to BIOMOD_Modeling, Full models are named:
-      # paste('RUN',NbRunEval+1,sep='')
+      # Full models are named _allData_allRun 
       if(is.data.frame(new.env)) {
         BIOMOD_Projection(bm.mod = mymodel, 
                           new.env = new.env[, colnames(new.env) %in% combinations[, k]], 
                           proj.name = paste(name.env, "ESM.BIOMOD", k, modeling.id,sep = "."), 
-                          models.chosen = c(grep("Full", mymodel@models.computed, value = TRUE),
-                                              grep(paste("RUN", NbRunEval + 1, sep = ""), 
-                                                   mymodel@models.computed, value = TRUE)), 
+                          models.chosen = c(grep("allRun", mymodel@models.computed, value = TRUE)), 
                           build.clamping.mask = FALSE)
       }
-      # if DataSplitTable is provided to BIOMOD_Modeling, Full models are named:
-      # paste('RUN',NbRunEval+1,sep='')
+      # Full models are named _allData_allRun 
       if(inherits(new.env,"RasterStack")) {
         BIOMOD_Projection(bm.mod = mymodel, 
                           new.env = new.env[[which(names(new.env) %in% combinations[, k])]],
                           proj.name = paste(name.env, "ESM.BIOMOD", k, modeling.id, sep = "."), 
-                          models.chosen = c(grep("Full", mymodel@models.computed, value = TRUE),
-                                              grep(paste("RUN", NbRunEval + 1, sep = ""), 
-                                                   mymodel@models.computed, value = TRUE)),
+                          models.chosen = c(grep("allRun", mymodel@models.computed, value = TRUE)),
                           build.clamping.mask = FALSE)
       }
     } ## End for loop
@@ -397,26 +391,20 @@ ecospat.ESM.Projection <- function(ESM.modeling.output, new.env, name.env = NULL
       
       if (!is.character(mymodel))
       {
-        # if DataSplitTable is provided to BIOMOD_Modeling, Full models are named:
-        # paste('RUN',NbRunEval+1,sep='')
+        # Full models are named _allData_allRun 
         if (is.data.frame(new.env)) {
           BIOMOD_Projection(bm.mod = mymodel, 
                             new.env = new.env[, colnames(new.env) %in% combinations[, k]], 
                             proj.name = paste(name.env, "ESM.BIOMOD", k, modeling.id,sep = "."), 
-                            models.chosen = c(grep("Full", mymodel@models.computed, value = TRUE),
-                                              grep(paste("RUN", NbRunEval + 1, sep = ""), 
-                                                   mymodel@models.computed, value = TRUE)), 
+                            models.chosen = c(grep("allRun", mymodel@models.computed, value = TRUE)), 
                             build.clamping.mask = FALSE)
         }
-        # if DataSplitTable is provided to BIOMOD_Modeling, Full models are named:
-        # paste('RUN',NbRunEval+1,sep='')
+        # Full models are named _allData_allRun 
         if (inherits(new.env,"RasterStack")) {
           BIOMOD_Projection(bm.mod = mymodel, 
                             new.env = new.env[[which(names(new.env) %in% combinations[, k])]],
                             proj.name = paste(name.env, "ESM.BIOMOD", k, modeling.id, sep = "."), 
-                            models.chosen = c(grep("Full", mymodel@models.computed, value = TRUE),
-                                              grep(paste("RUN", NbRunEval + 1, sep = ""), 
-                                                   mymodel@models.computed, value = TRUE)),
+                            models.chosen = c(grep("allRun", mymodel@models.computed, value = TRUE)),
                             build.clamping.mask = FALSE)
         }
       } ## End loop if(class(model)) ## i.e. if model not failed
@@ -576,7 +564,7 @@ ecospat.ESM.EnsembleModeling <- function(ESM.modeling.output, weighting.score, t
             }
           }
         }
-        x <- x[, colnames(x) != "Full" & colnames(x) != paste("RUN", NbRunEval + 1, sep = "")]  # if DataSplitTable is provided to BIOMOD_Modeling, Full models are named: paste('RUN',NbRunEval+1,sep='')
+        x <- x[, !grepl(colnames(x), pattern = "allRun")]  # if DataSplitTable is provided to BIOMOD_Modeling, Full models are named: paste('RUN',NbRunEval+1,sep='')
         if (NbRunEval > 1) {
           x <- round(apply(x, 1, mean, na.rm = TRUE), 4)
         }
@@ -588,7 +576,7 @@ ecospat.ESM.EnsembleModeling <- function(ESM.modeling.output, weighting.score, t
             x <- NA
           }
         }
-        x <- x[, colnames(x) != "Full" & colnames(x) != paste("RUN", NbRunEval + 1, sep = "")]
+        x <- x[, !grepl(colnames(x), pattern = "allRun")]
         x <- round(mean(x, na.rm = TRUE), 4)
       }
       if (weighting.score == "SomersD") {
@@ -648,9 +636,8 @@ ecospat.ESM.EnsembleModeling <- function(ESM.modeling.output, weighting.score, t
   biva.st2 <- do.call(cbind, test.pred)
   for (i in 1:length(models)) {
     for (run in 1:ncol(calib.lines)) {
-      Model.biva.prediction <- biva.st2[, grep(paste("RUN",
-                                               run, "_", models[i], sep = ""), 
-                                          colnames(biva.st2))]
+      this.model <- colnames(calib.lines)[run]
+      Model.biva.prediction <- biva.st2[, grep(this.model, colnames(biva.st2))]
       ModelToWeight <- paste(models[i],sub("_.*","",colnames(Model.biva.prediction)),sep=".")
       weights2 <- weights[ModelToWeight]
       test.ESM1 <- apply(Model.biva.prediction, 
@@ -858,7 +845,7 @@ ecospat.ESM.EnsembleProjection <- function(ESM.prediction.output, ESM.EnsembleMo
   NbRunEval <- ESM.prediction.output$NbRunEval
   pred.biva <- ESM.prediction.output$pred.biva
   new.env.raster <- ESM.prediction.output$new.env.raster
-  failed.mod <- grep(paste("RUN", NbRunEval + 1, sep = ""), unlist(ESM.EnsembleModeling.output$failed),
+  failed.mod <- grep("allRun", unlist(ESM.EnsembleModeling.output$failed),
                      value = TRUE)
   
   ####### remove bivariate models which are not used for ESM
@@ -891,8 +878,8 @@ ecospat.ESM.EnsembleProjection <- function(ESM.prediction.output, ESM.EnsembleMo
   for (i in 1:length(pred.biva)) {
     if (!new.env.raster) {
       biva.proj[[i]] <- .transform_model.as.col(get(load(pred.biva[i])))
-      colnames(biva.proj[[i]]) <- gsub("AllData", "BIOMOD", colnames(biva.proj[[i]]))
-      colnames(biva.proj[[i]]) <- gsub(paste("RUN", NbRunEval + 1, sep = ""), "ESM", colnames(biva.proj[[i]]))
+      colnames(biva.proj[[i]]) <- gsub("allData", "BIOMOD", colnames(biva.proj[[i]]))
+      colnames(biva.proj[[i]]) <- gsub("allRun", "ESM", colnames(biva.proj[[i]]))
       colnames(biva.proj[[i]]) <- paste(colnames(biva.proj[[i]]), i, sep = ".")
     }
     if (new.env.raster) {
@@ -1191,7 +1178,7 @@ ecospat.ESM.VarContrib <- function(ESM.modeling.output,ESM_EF.output) {
     calib.Lines[sample(abs,size = round(length(abs)*DataSplit/100)),i] = TRUE
   }
   calib.Lines <- cbind(calib.Lines,TRUE)
-  colnames(calib.Lines) = c(paste0("_RUN",1:NbRunEval),"_Full")
+  colnames(calib.Lines) = c(paste0("_allData_RUN",1:NbRunEval),"_allData_allRun")
   if ("PA.table" %in% slotNames(bm.format)) {
     calib.Lines[!(bm.format@PA.table[,1]),] = NA
   }
