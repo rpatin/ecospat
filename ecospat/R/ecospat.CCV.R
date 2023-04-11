@@ -352,13 +352,12 @@ ecospat.CCV.modeling <- function(sp.data,
     }else{
       MyBiomodOptions <- biomod2::BIOMOD_ModelingOptions(models.options) #NOT WORKING YET!!!!
     }
-    
     #Running the models
     MyBiomodModelOut <- biomod2::BIOMOD_Modeling(bm.format = MyBiomodData,
                                         models = models,
                                         bm.options = MyBiomodOptions,
                                         metric.eval = eval.metrics,
-                                        data.split.table = DataSplitTable,
+                                        CV.user.table = DataSplitTable,
                                         prevalence = NULL,
                                         modeling.id = "ccv")
     

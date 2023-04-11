@@ -224,9 +224,18 @@ ecospat.ESM.Modeling <- function(data, NbRunEval = NULL, DataSplit = NULL, DataS
       
       #######       
       mymodels[[k]] <- "failed"
-      try(mymodels[[k]] <- biomod2::BIOMOD_Modeling(bm.format = mydata, models = models, bm.options = models.options,nb.rep	= NbRunEval,
-                                                    metric.eval = models.eval.meth, data.split.table = as.matrix(calib.lines), prevalence = Prevalence, 
-                                                    do.full.models = TRUE, var.import = 0, modeling.id = modeling.id, weights = Yweights))
+      try(mymodels[[k]] <- biomod2::BIOMOD_Modeling(bm.format = mydata,
+                                                    models = models,
+                                                    bm.options = models.options,
+                                                    # CV.nb.rep = NbRunEval, # deactivated by CV.user.table
+                                                    metric.eval = models.eval.meth,
+                                                    CV.strategy = "user.defined",
+                                                    CV.user.table = as.matrix(calib.lines),
+                                                    prevalence = Prevalence, 
+                                                    # CV.do.full.models = TRUE, # deactivated by CV.user.table
+                                                    var.import = 0, 
+                                                    modeling.id = modeling.id, 
+                                                    weights = Yweights))
       
       if (cleanup != FALSE) {
         removeTmpFiles(h = cleanup)
@@ -260,10 +269,17 @@ ecospat.ESM.Modeling <- function(data, NbRunEval = NULL, DataSplit = NULL, DataS
                                                  weights = Yweights)$models.options
       }
       #######       
-      
-      biomod2::BIOMOD_Modeling(bm.format = mydata, models = models, bm.options = models.options,nb.rep	= NbRunEval,
-                               metric.eval = models.eval.meth, data.split.table = as.matrix(calib.lines), prevalence = Prevalence, 
-                               do.full.models = TRUE, var.import = 0, modeling.id = modeling.id, weights = Yweights)
+      biomod2::BIOMOD_Modeling(bm.format = mydata,
+                               models = models, 
+                               bm.options = models.options,
+                               # CV.nb.rep	= NbRunEval, # deactivated by CV.user.table
+                               metric.eval = models.eval.meth, 
+                               CV.user.table = as.matrix(calib.lines),
+                               prevalence = Prevalence, 
+                               # CV.do.full.models = TRUE, # deactivated by CV.user.table
+                               var.import = 0, 
+                               modeling.id = modeling.id,
+                               weights = Yweights)
       
     }
   }
