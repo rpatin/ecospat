@@ -444,7 +444,7 @@ ecospat.CCV.modeling <- function(sp.data,
   #Creating the calibration and evaluation data (if not provided)
   if(is.null(DataSplitTable)){
     DataSplitTable <- ecospat.CCV.createDataSplitTable(NbSites = dim(xy)[1], NbRunEval = NbRunEval, DataSplit = DataSplit, validation.method = validation.method)
-  }else{
+  } else {
     NbRunEval <- dim(DataSplitTable)[2]
   }
   
@@ -708,7 +708,13 @@ ecospat.CCV.modeling <- function(sp.data,
       temp.evaluations <- biomod2::get_evaluations(eval(parse(text=paste(i,".ccv.ensemble.models.out",sep=""))))
       tmp.model.list <- unique(temp.evaluations$full.name)
       for (l in seq_along(tmp.model.list)) {
-        singleSpecies.ensembleEvaluationScore[,i,l] <- temp.evaluations$validation[which(temp.evaluations$full.name == tmp.model.list[l])] ## Error but what they wanted???
+        if(!grepl(tmp.model.list[l], pattern = "allRun")) {
+          # R. Patin 2022/04: do not work for full model (singleSpecies.ensembleEvaluationScore not large enough)
+          singleSpecies.ensembleEvaluationScore[,i,l] <- 
+          temp.evaluations$validation[
+            which(temp.evaluations$full.name == tmp.model.list[l])
+            ] ## Error but what they wanted???
+        }
       }
 
       #Single model variable importance
