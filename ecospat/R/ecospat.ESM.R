@@ -564,7 +564,7 @@ ecospat.ESM.EnsembleModeling <- function(ESM.modeling.output, weighting.score, t
             }
           }
         }
-        x <- x[, !grepl(colnames(x), pattern = "allRun")]  # if DataSplitTable is provided to BIOMOD_Modeling, Full models are named: paste('RUN',NbRunEval+1,sep='')
+        x <- x[, !grepl(colnames(x), pattern = "allRun")]  
         if (NbRunEval > 1) {
           x <- round(apply(x, 1, mean, na.rm = TRUE), 4)
         }
@@ -631,14 +631,17 @@ ecospat.ESM.EnsembleModeling <- function(ESM.modeling.output, weighting.score, t
     # x<- x[,grep(paste('RUN',NbRunEval+1,sep=''),colnames(x),invert=TRUE)]
     return(x)
   })
-  
   test.ESM <- NULL
   biva.st2 <- do.call(cbind, test.pred)
   for (i in 1:length(models)) {
     for (run in 1:ncol(calib.lines)) {
       this.model <- colnames(calib.lines)[run]
       Model.biva.prediction <- biva.st2[, grep(this.model, colnames(biva.st2))]
-      ModelToWeight <- paste(models[i],sub("_.*","",colnames(Model.biva.prediction)),sep=".")
+      if (length(models) == 1) {
+        ModelToWeight <- paste("",sub("_.*","",colnames(Model.biva.prediction)),sep=".")
+      } else  {
+        ModelToWeight <- paste(models[i],sub("_.*","",colnames(Model.biva.prediction)),sep=".")
+      }
       weights2 <- weights[ModelToWeight]
       test.ESM1 <- apply(Model.biva.prediction, 
                          1, function(x) weighted.mean(x, weights2, na.rm = TRUE))
@@ -847,7 +850,7 @@ ecospat.ESM.EnsembleProjection <- function(ESM.prediction.output, ESM.EnsembleMo
   new.env.raster <- ESM.prediction.output$new.env.raster
   failed.mod <- grep("allRun", unlist(ESM.EnsembleModeling.output$failed),
                      value = TRUE)
-  
+
   ####### remove bivariate models which are not used for ESM
   if (length(models) == 1) {
     weigths.rm <- NULL
@@ -888,7 +891,6 @@ ecospat.ESM.EnsembleProjection <- function(ESM.prediction.output, ESM.EnsembleMo
   }
   
   ######## Use bivariate models to build ESMs for each model technique
-  
   if (!new.env.raster) {
     pred.ESM <- list()
     biva.st <- do.call(cbind, biva.proj)
