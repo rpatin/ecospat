@@ -117,6 +117,7 @@ ecospat.CCV.createDataSplitTable <- function(NbRunEval,
         DataSplitTable[which(grouper %in% ((i:(i+iner-1)%%NbRunEval)+1)),i] <- TRUE
       }
     }
+    colnames(DataSplitTable) <- paste0("_allData_RUN",seq_len(ncol(DataSplitTable)))
     return(DataSplitTable)
   }
   
@@ -353,10 +354,12 @@ ecospat.CCV.modeling <- function(sp.data,
       MyBiomodOptions <- biomod2::BIOMOD_ModelingOptions(models.options) #NOT WORKING YET!!!!
     }
     #Running the models
+    # DataSplitTable should be named appropriately
     MyBiomodModelOut <- biomod2::BIOMOD_Modeling(bm.format = MyBiomodData,
                                         models = models,
                                         bm.options = MyBiomodOptions,
                                         metric.eval = eval.metrics,
+                                        CV.strategy = "user.defined",
                                         CV.user.table = DataSplitTable,
                                         prevalence = NULL,
                                         modeling.id = "ccv")
